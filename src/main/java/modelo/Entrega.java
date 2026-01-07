@@ -1,24 +1,36 @@
 package modelo;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.*;
 
 
+@Entity
 public class Entrega {
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    
     private String data;
+    
+    // Um entregador pode fazer varias entregas
+    @ManyToOne
     private Entregador entregador;
+    
+    // um pedido pertence a uma entrega
+    @OneToMany(mappedBy = "entrega", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Pedido> lista_pedidos = new ArrayList<>();
 
+    public Entrega() {}
+    
    
     public Entrega(String data) {
         this.data = data;	}
     
-    public Entrega(Integer Id) {
-        this.id = id;	}
 
 	public void adicionar(Pedido pedido) {
+		pedido.setEntrega(this); // vincula o pedido a entrega 
         lista_pedidos.add(pedido);
     }
 
@@ -30,7 +42,7 @@ public class Entrega {
         return id;
     }
     
-    public void SetId(int idNovo) {
+    public void setId(int idNovo) {
          this.id = idNovo;
     }
 
@@ -57,24 +69,23 @@ public class Entrega {
     }
     
     
-	public Pedido getEntregas(int id) throws Exception{			
-		for (Pedido c : lista_pedidos) {
-			if (c.getId() == id) {
-				return c;
-			}
-		}
-
-		throw new Exception("Entrega não encontrado");
-	}
-
-	public Pedido getPedido(String descricao) throws Exception{			
-		for (Pedido p : lista_pedidos) {
-			if (p.getDescricao().equals(descricao)) {
-				return p;
-			}
-		}
-		return null;
-	}
+    public Pedido localizarPedidoPeloId(int id) {			
+        for (Pedido p : lista_pedidos) {
+            if (p.getId() == id) {
+                return p;
+            }
+        }
+        return null;
+    }
+    
+    public Pedido getPedido(String descricao) {			
+        for (Pedido p : lista_pedidos) {
+            if (p.getDescricao().equals(descricao)) {
+                return p;
+            }
+        }
+        return null;
+    }
 
     
    
@@ -82,11 +93,14 @@ public class Entrega {
 	@Override
 	public String toString() {
 		
+			// lista temporaria comas descriçoes dos pedidos 
 			ArrayList<String> descricaoPedidos = new ArrayList<String>();
 			for(Pedido p : this.getListaPedidos()) {
 				descricaoPedidos.add(p.getDescricao());
 			}
-	    // Verifica se o entregador não é nulo antes de pegar o nome
+			
+			
+	    // Verifica se o entregador existe se sim pega o nome se não - entrega sem entregador 
 	    String nomeEntregador = (this.entregador != null) ? this.entregador.getNome() : "Sem entregador";
 	    
 	    return "Id:" + getId() +", "+ "Entrega [data=" + data + ", entregador=" + nomeEntregador + ","+"Pedidos:"+ descricaoPedidos+"]";

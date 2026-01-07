@@ -1,25 +1,64 @@
 package modelo;
 
+import jakarta.persistence.*;
+
+@Entity
 public class Pedido {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    
     private double valor;
     private String descricao;
-    private Entrega entrega;
     private String localizacao;
+    
+    // Muitos Pedidos para Uma Entrega
+    @ManyToOne
+    private Entrega entrega;
 
+    public Pedido() {}    
 
     public Pedido(double valor, String descricao, String localizacao) {
         this.valor = valor;
         this.descricao = descricao;
-        this.localizacao = localizacao;	}
+        this.localizacao = localizacao;	
+    }
     
+    
+    public int getId() {
+        return id;
+    }
+    
+    public void setId(int idNovo) {
+        this.id = idNovo;
+    }
     
     public double getValor() {
         return valor;
     }
 
+    public void setValor(Double valor) {
+        this.valor = valor;
+    }
     
-	public Entrega getEntrega() {
+    public String getDescricao() {
+        return descricao;
+    }
+    
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+    
+    public String getLocalizacao() {
+        return localizacao;
+    }
+   
+    public void setLocalizacao(String localizacao) {
+        this.localizacao = localizacao;
+    }
+    
+    public Entrega getEntrega() {
         return entrega;
     }
 
@@ -27,44 +66,13 @@ public class Pedido {
         this.entrega = entrega;
     }
     
-    public void setValor(Double valor) {
-        this.valor = valor;
+    // toString 
+    @Override
+    public String toString() {
+        String infoEntrega = (this.entrega != null) ? String.valueOf(this.entrega.getId()) : "Sem entrega";
+        
+        return "Id: " + this.id + ", Pedido: " + this.descricao + 
+               ", Localização: " + this.localizacao + ", Valor: " + this.valor + 
+               ", ID Entrega: " + infoEntrega;
     }
-    
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-   
-    public void setLocalizacao(String localizacao) {
-        this.localizacao = localizacao;
-    }
-   
-    
-    public int getId() {
-        return id;
-    }
-    
-    public void SetId(int idNovo) {
-        this.id = idNovo;
-   }
-    
-    public String getDescricao() {
-        return descricao;
-    }
-    
-
-  //tostring
-  		@Override
-  		public String toString() {
-  			return "id: " + this.id + ", "+ " Pedido: " + this.descricao + ", "+ "Localização "+":"+ this.localizacao + " Valor: " + this.valor + ", "+ " Entrega: " + (this.entrega != null ? this.entrega.getId() : "Sem entrega");
-  		}
-
-
-
-
-		
-  		
-  	
-		
-  	}
-
+}

@@ -2,23 +2,36 @@ package modelo;
 
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.*;
 
-
+@Entity
 public class Entregador {
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    
+    // mudei para o id agora ser a pk
     private String nome;
+    
+    // Um entregador tem variás entregas
+    @OneToMany(mappedBy = "entregador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Entrega> lista_entregas = new ArrayList<>();
 
+    public Entregador() {}
+    
+    
     public Entregador(String nome) {
         this.nome = nome;
     }
 
  
 	public void adicionar(Entrega e) {
+		e.setEntregador(this); // vinculando dos dois lados
         lista_entregas.add(e);
     }
     
-    public void SetId(int idNovo) {
+    public void setId(int idNovo) {
         this.id = idNovo;
    }
     public void remover(Entrega e) {
@@ -33,7 +46,7 @@ public class Entregador {
         return lista_entregas;
     }
     
-	public Entrega getEntregador(int id) throws Exception{			
+	public Entrega getEntrega(int id) throws Exception{			
 		for (Entrega e : lista_entregas) {
 			if (e.getId() == id) {
 				return e;

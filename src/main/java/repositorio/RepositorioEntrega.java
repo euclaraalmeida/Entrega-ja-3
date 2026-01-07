@@ -2,9 +2,7 @@ package repositorio;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.db4o.query.Candidate;
-import com.db4o.query.Evaluation;
-import com.db4o.query.Query;
+
 import modelo.Entrega;
 import modelo.Pedido;
 import util.Util;

@@ -1,0 +1,6 @@
+/target/
+*.class
+*.db4o
+.settings/
+.classpath
+.project

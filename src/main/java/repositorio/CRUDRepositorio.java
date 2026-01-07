@@ -1,23 +1,25 @@
 /**********************************
  * IFPB - Curso Superior de Tec. em Sist. para Internet
- * Persist�ncia de Objetos
- * Prof. Fausto Maranh�o Ayres
+ * Persistência de Objetos
+ * Prof. Fausto Maranhão Ayres
  **********************************/
 package repositorio;
 
-import java.util.ArrayList;
+import java.lang.reflect.ParameterizedType;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
-import com.db4o.query.Query;
+import org.hibernate.Session;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 
 import util.Util;
-import util.ControleID;
 
 public abstract class CRUDRepositorio<T> {
-	// opera��es CRUD para persistir qualquer tipo de objeto T
+	// operações CRUD para persistir qualquer tipo de objeto T
 
 	public void conectar() {
-		Util.conectarBanco();
+		Util.conectar();
 	}
 
 	public void desconectar() {
@@ -25,47 +27,74 @@ public abstract class CRUDRepositorio<T> {
 	}
 
 	public void criar(T objeto) {
-		Util.getManager().store(objeto);
+		Util.getManager().persist(objeto);
 	}
 
 	public void atualizar(T objeto) {
-		Util.getManager().store(objeto);
+		Util.getManager().merge(objeto);
+	}
+
+	public void apagar(T objeto) {
+		Util.getManager().remove(objeto);
 	}
 
 	public abstract T ler(Object chave);
+	public abstract List<T> listar() ;
 
-	public void apagar(T objeto) {
-		Util.getManager().delete(objeto);
+	
+	public static void begin() {
+		if (!Util.getManager().getTransaction().isActive())
+			Util.getManager().getTransaction().begin();
 	}
 
-	public List<T> listar() {
+	public static void commit() {
+		if (Util.getManager().getTransaction().isActive()) {
+			Util.getManager().getTransaction().commit();
+			Util.getManager().clear(); // limpar cache de objetos
+		}
+	}
+
+	public static void rollback() {
+		if (Util.getManager().getTransaction().isActive())
+			Util.getManager().getTransaction().rollback();
+	}
+
+	public void resetID() {
+		//resetar coluna id em 1
+		//deve ser chamado de dentro de uma transação, antes de um commit
 		@SuppressWarnings("unchecked")
-		Class<T> type = (Class<T>) ((java.lang.reflect.ParameterizedType) getClass().getGenericSuperclass())
+		Class<T> type = (Class<T>) ((ParameterizedType) this.getClass().getGenericSuperclass())
 				.getActualTypeArguments()[0];
+		String classe = type.getSimpleName().toLowerCase();
+		try {
+			String nomesgbd = "";
+			Connection con = getConnection();
+			if (con == null)
+				throw new SQLException("resetar id - falha ao obter conexao");
 
-		Query q = Util.getManager().query();
-		q.constrain(type);
-		List<T> resultado = q.execute();
-		return new ArrayList<>(resultado);
+			// sql para resetar depende do SGBD
+			nomesgbd = con.getMetaData().getDatabaseProductName();
+			if (nomesgbd.equalsIgnoreCase("postgresql"))
+				Util.getManager().createNativeQuery("ALTER SEQUENCE " + classe + "_id_seq RESTART WITH 1").executeUpdate();
+			else if (nomesgbd.equalsIgnoreCase("mysql"))
+				Util.getManager().createNativeQuery("ALTER TABLE " + classe + " AUTO_INCREMENT = 1").executeUpdate();
+			else
+				throw new SQLException("resetar id - sgbd desconhecido " + nomesgbd);
+
+		} catch (SQLException ex) {
+			throw new RuntimeException("resetar id -  " + ex.getMessage());
+		}
+
 	}
-
-	public void begin() {
-		// nao faz nada, pois o db4o inicia uma transa��o automaticamente
-	}
-
-	public void commit() {
-		Util.getManager().commit();
-	}
-
-	public void rollback() {
-		Util.getManager().rollback();
-	}
-
-	public void resetarID(int valorInicial) {
-		@SuppressWarnings("unchecked")
-		Class<T> type = (Class<T>) ((java.lang.reflect.ParameterizedType) getClass().getGenericSuperclass())
-				.getActualTypeArguments()[0];
-
-		ControleID.resetarRegistroID(type, valorInicial);
+	public static Connection getConnection() {
+		//obter conexao jdbc (classe Connection) atraves do hibernate
+		try {
+			Session session = Util.getManager().unwrap(Session.class);
+			SessionFactoryImplementor sfi = (SessionFactoryImplementor) session.getSessionFactory();
+			Connection conn = sfi.getJdbcServices().getBootstrapJdbcConnectionAccess().obtainConnection();
+			return conn;
+		} catch (Exception ex) {
+			return null;
+		}
 	}
 }

@@ -1,7 +1,6 @@
 package repositorio;
 import java.util.ArrayList;
 import java.util.List;
-import com.db4o.query.Query;
 
 import modelo.Entregador;
 import modelo.Pedido;
