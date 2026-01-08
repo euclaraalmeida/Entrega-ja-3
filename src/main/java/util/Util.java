@@ -9,10 +9,14 @@ public class Util {
     private static EntityManagerFactory factory;
     private static EntityManager manager;
 
+    public static void conectar() {
+        // Apenas garante que o manager existe
+        getManager();
+    }
+
     public static EntityManager getManager() {
         if (manager == null || !manager.isOpen()) { 
             if (factory == null) {
-                // ATENÇÃO: O nome aqui deve ser IGUAL ao <persistence-unit name="..."> do seu persistence.xml
                 factory = Persistence.createEntityManagerFactory("entrega-ja-pu");
             }
             manager = factory.createEntityManager();

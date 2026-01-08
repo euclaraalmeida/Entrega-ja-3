@@ -1,65 +1,40 @@
 package repositorio;
-import java.util.ArrayList;
+
 import java.util.List;
-
-
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
 import modelo.Entregador;
-import modelo.Pedido;
 import util.Util;
 
-public class RepositorioEntregador  extends CRUDRepositorio<Entregador>{
-	
-	
-	public Entregador lerEntregador(Object chave) {
-		String nome = (String) chave;
-		Query q = Util.getManager().query();
-		q.constrain(Entregador.class);
-		q.descend("nome").constrain(nome);
-		List<Entregador> resultado = q.execute();
-		if(resultado.size()>0) {
-			return resultado.getFirst();
-		}else {
-			return null;
-		}
-	
-	}
-	    
-   	
-   	// Listar 
-       public List<Entregador> ListarEntregador() {
-           System.out.println("------Lista de Entregadores---");
-           Query q1 = Util.getManager().query(); 
-           q1.constrain(Entregador.class);
-           List<Entregador> resultados1 = q1.execute(); 
+public class RepositorioEntregador extends CRUDRepositorio<Entregador> {
 
-           if (resultados1.isEmpty()) {
-               System.out.println("Nenhum entregador cadastrado.");
-           } else {
-               for (Entregador e : resultados1) {
-                   System.out.println(e); 
-               }
-           }
-           
-           return new ArrayList<>(resultados1); 
-       }
-	   @Override
-	   public Entregador ler(Object chave) {
-		// TODO Auto-generated method stub
-		return null;
-	   }
+    public Entregador ler(String nome) {
+        try {
+        	
+            String jpql = "SELECT e FROM Entregador e WHERE e.nome = :n";
+            
+            TypedQuery<Entregador> query = Util.getManager().createQuery(jpql, Entregador.class);
+            
+            query.setParameter("n", nome);
+            
+            // Transforma ela num objeto Entregador
+            // Entrega (retorna) esse objeto
+            return query.getSingleResult(); // ctz que vai retornar apenas 1 , 
+            // se puder ter mais de 1 entregador isso muda , perguntar tbm se essa busca sera pelo nome mesmo ou pelo id agora?
+        } catch (NoResultException e) {
+            return null; 
+        }
+    }
 
-
-
-       }
-       
-	       
-       
-
-
-
-	
-	
-       
-
-
-
+    @Override
+    public Entregador ler(Object chave) {
+        return ler((String) chave);
+    }
+    
+    @Override
+    public List<Entregador> listar() {
+        return Util.getManager()
+                   .createQuery("SELECT e FROM Entregador e ORDER BY e.id", Entregador.class)
+                   .getResultList();
+    }
+}

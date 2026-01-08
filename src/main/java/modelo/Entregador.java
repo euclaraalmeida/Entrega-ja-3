@@ -12,6 +12,7 @@ public class Entregador {
     private int id;
     
     // mudei para o id agora ser a pk
+	@Column(unique = true) // ainda vai ser unico de acordo com as regras de negocio da etapa 2? 
     private String nome;
     
     // Um entregador tem variás entregas

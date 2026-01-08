@@ -49,7 +49,7 @@ public class Fachada {
                 throw new Exception("Formato data invalido: " + data);
             }
             
-            Entregador entregador = EntregadorRepositorio.lerEntregador(nomeEntregador);
+            Entregador entregador = EntregadorRepositorio.ler(nomeEntregador);
             if (entregador == null) {
                 throw new Exception("Entregador não encontrado: " + nomeEntregador);
             }
@@ -77,7 +77,7 @@ public class Fachada {
             EntregadorRepositorio.begin();
 
             // 1. Verificação de duplicidade melhorada
-            Entregador existente = EntregadorRepositorio.lerEntregador(nome);
+            Entregador existente = EntregadorRepositorio.ler(nome);
             if (existente != null) {
                 // Lança erro para o "front-end" ou console saber que falhou
                 throw new Exception("Erro: O entregador '" + nome + "' já está cadastrado."); 
@@ -110,7 +110,7 @@ public class Fachada {
         try {
             EntregadorRepositorio.begin();
 
-            Entregador entregador = EntregadorRepositorio.lerEntregador(nomeEntregador);
+            Entregador entregador = EntregadorRepositorio.ler(nomeEntregador);
             if (entregador == null) throw new Exception("Entregador não encontrado: " + nomeEntregador);
 
             Entrega entregaParaRemover = null;
@@ -148,7 +148,7 @@ public class Fachada {
         PedidoRepositorio.conectar();
         try {
             PedidoRepositorio.begin();
-            Pedido p = PedidoRepositorio.lerPedido(id);
+            Pedido p = PedidoRepositorio.ler(id);
             if (p == null) throw new Exception("Pedido inexistente ID: " + id);
 
             Entrega e = p.getEntrega();
@@ -173,7 +173,7 @@ public class Fachada {
         try {
             EntregadorRepositorio.begin();
             
-            Entregador e = EntregadorRepositorio.lerEntregador(nome);
+            Entregador e = EntregadorRepositorio.ler(nome);
             if (e == null) throw new Exception("Entregador não encontrado: " + nome);
 
             if (!e.getListaEntregas().isEmpty()) {
@@ -205,7 +205,7 @@ public class Fachada {
         try {
             PedidoRepositorio.begin();
             
-            Pedido p = PedidoRepositorio.lerPedido(idPedido);
+            Pedido p = PedidoRepositorio.ler(idPedido);
             if (p == null) throw new Exception("Pedido não existe: " + idPedido);
             if (p.getEntrega() != null) throw new Exception("Pedido já tem entrega");
 
@@ -239,7 +239,7 @@ public class Fachada {
     public static List<Entregador> listarEntregador() {
         EntregadorRepositorio.conectar();
         try {
-            List<Entregador> lista = EntregadorRepositorio.ListarEntregador();
+            List<Entregador> lista = EntregadorRepositorio.listar();
 
             if (lista == null) {
                 return new ArrayList<>(); 
@@ -260,7 +260,7 @@ public class Fachada {
     public static List<Entrega> listarEntregas(){
         EntregaRepositorio.conectar();
         try { 
-            List<Entrega> lista = EntregaRepositorio.ListarEntregas();
+            List<Entrega> lista = EntregaRepositorio.listar();
             for(Entrega e : lista) {
                 if(e.getEntregador() != null) e.getEntregador().getNome();
                 e.getListaPedidos().size();
@@ -271,7 +271,7 @@ public class Fachada {
     }
     public static List<Pedido> listarPedidos(){
         PedidoRepositorio.conectar();
-        try { return PedidoRepositorio.ListarPedidos(); } 
+        try { return PedidoRepositorio.listar(); } 
         finally { PedidoRepositorio.desconectar(); }
     }
 
