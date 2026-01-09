@@ -55,10 +55,13 @@ public class RepositorioEntrega extends CRUDRepositorio<Entrega> {
 
 
 	//quais os entregas com mais de N pedidos
-	
-
     public List<Entrega> consultarEntregasComMaisDeNPedidos(int N) {
-    	return null;
+    	   String jpql = "SELECT e FROM Entrega e WHERE SIZE(e.lista_pedidos) > :n";
+		    
+		    TypedQuery<Entrega> query = Util.getManager().createQuery(jpql, Entrega.class);
+		    query.setParameter("n", N);
+		    
+		    return query.getResultList();
     }
     
 	@Override

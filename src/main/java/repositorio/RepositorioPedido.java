@@ -30,9 +30,14 @@ public class RepositorioPedido  extends CRUDRepositorio<Pedido>{
 	
 	}
 	
-	// pedidos entregues por X entregador
-	public List<Pedido> PedidosPorEntregador(Object chave){
-			return null;
+	// pedidos entregues por X entregador 
+	public List<Pedido> PedidosPorEntregador(String nomeEntregador){
+	    String jpql = "SELECT p FROM Pedido p WHERE p.entrega.entregador.nome = :nome";
+	    
+	    TypedQuery<Pedido> query = Util.getManager().createQuery(jpql, Pedido.class);
+	    query.setParameter("nome", nomeEntregador);
+	    
+	    return query.getResultList();		 
 	}
 	
 

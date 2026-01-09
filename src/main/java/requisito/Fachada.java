@@ -9,6 +9,7 @@ import java.util.List;
 import modelo.Entrega;
 import modelo.Entregador;
 import modelo.Pedido;
+import repositorio.CRUDRepositorio;
 import repositorio.RepositorioEntrega;
 import repositorio.RepositorioEntregador;
 import repositorio.RepositorioPedido;
@@ -26,13 +27,14 @@ public class Fachada {
     public static void CriarPedido(double valor, String descricao, String localizacao) throws Exception {
         PedidoRepositorio.conectar();
         try {
-            PedidoRepositorio.begin();
-            // O ID será gerado automaticamente pelo ControleID ao salvar
+            CRUDRepositorio.begin(); 
+            
             Pedido p = new Pedido(valor, descricao, localizacao);
             PedidoRepositorio.criar(p);
-            PedidoRepositorio.commit();
+            
+            CRUDRepositorio.commit(); 
         } catch (Exception e) {
-            PedidoRepositorio.rollback();
+            CRUDRepositorio.rollback(); 
             throw e;
         } finally {
             PedidoRepositorio.desconectar();
@@ -42,29 +44,30 @@ public class Fachada {
     public static void CriarEntrega(String data, String nomeEntregador) throws Exception {
         EntregaRepositorio.conectar();
         try {
-            EntregaRepositorio.begin();
+            CRUDRepositorio.begin();
+
             try {
                 LocalDate.parse(data, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             } catch (DateTimeParseException e) {
                 throw new Exception("Formato data invalido: " + data);
             }
             
+            // Busca entregador pelo nome
             Entregador entregador = EntregadorRepositorio.ler(nomeEntregador);
             if (entregador == null) {
                 throw new Exception("Entregador não encontrado: " + nomeEntregador);
             }
 
-            // O ID será gerado automaticamente
             Entrega e = new Entrega(data);
             e.setEntregador(entregador);
             entregador.adicionar(e);
 
-            EntregaRepositorio.criar(e);
-            EntregadorRepositorio.atualizar(entregador);
+            EntregaRepositorio.criar(e);          
+            EntregadorRepositorio.atualizar(entregador); 
             
-            EntregaRepositorio.commit();
+            CRUDRepositorio.commit();
         } catch (Exception e) {
-            EntregaRepositorio.rollback();
+            CRUDRepositorio.rollback();
             throw e;
         } finally {
             EntregaRepositorio.desconectar();
@@ -74,29 +77,21 @@ public class Fachada {
     public static void CriarEntregador(String nome) throws Exception {
         EntregadorRepositorio.conectar();
         try {
-            EntregadorRepositorio.begin();
+            CRUDRepositorio.begin();
 
-            // 1. Verificação de duplicidade melhorada
             Entregador existente = EntregadorRepositorio.ler(nome);
             if (existente != null) {
-                // Lança erro para o "front-end" ou console saber que falhou
                 throw new Exception("Erro: O entregador '" + nome + "' já está cadastrado."); 
             }
 
-            // 2. Criação
             Entregador e = new Entregador(nome);
             EntregadorRepositorio.criar(e);
             
-            // 3. Confirmação
-            EntregadorRepositorio.commit();
-            System.out.println("Entregador criado com sucesso!"); // Log opcional
-
+            CRUDRepositorio.commit();
         } catch (Exception e) {
-            // 4. Desfaz mudanças em caso de erro
-            EntregadorRepositorio.rollback();
-            throw e; // Repassa o erro para quem chamou tratar (ex: mostrar na tela)
+            CRUDRepositorio.rollback();
+            throw e;
         } finally {
-            // 5. Sempre fecha a conexão
             EntregadorRepositorio.desconectar();
         }
     }
@@ -108,7 +103,7 @@ public class Fachada {
     public static void removerEntregaDoEntregador(String nomeEntregador, int idEntrega) throws Exception {
         EntregadorRepositorio.conectar();
         try {
-            EntregadorRepositorio.begin();
+            CRUDRepositorio.begin();
 
             Entregador entregador = EntregadorRepositorio.ler(nomeEntregador);
             if (entregador == null) throw new Exception("Entregador não encontrado: " + nomeEntregador);
@@ -131,9 +126,9 @@ public class Fachada {
             EntregadorRepositorio.atualizar(entregador);
             EntregaRepositorio.atualizar(entregaParaRemover);
             
-            EntregadorRepositorio.commit();
+            CRUDRepositorio.commit();
         } catch (Exception e) {
-            EntregadorRepositorio.rollback();
+            CRUDRepositorio.rollback();
             throw e;
         } finally {
             EntregadorRepositorio.desconectar();
@@ -147,7 +142,8 @@ public class Fachada {
     public static void apagarPedido(int id) throws Exception {
         PedidoRepositorio.conectar();
         try {
-            PedidoRepositorio.begin();
+            CRUDRepositorio.begin();
+            
             Pedido p = PedidoRepositorio.ler(id);
             if (p == null) throw new Exception("Pedido inexistente ID: " + id);
 
@@ -159,9 +155,9 @@ public class Fachada {
             }
 
             PedidoRepositorio.apagar(p);
-            PedidoRepositorio.commit();
+            CRUDRepositorio.commit();
         } catch (Exception e) {
-            PedidoRepositorio.rollback();
+            CRUDRepositorio.rollback();
             throw e;
         } finally {
             PedidoRepositorio.desconectar();
@@ -171,11 +167,12 @@ public class Fachada {
     public static void excluirEntregador(String nome) throws Exception {
         EntregadorRepositorio.conectar();
         try {
-            EntregadorRepositorio.begin();
+            CRUDRepositorio.begin();
             
             Entregador e = EntregadorRepositorio.ler(nome);
             if (e == null) throw new Exception("Entregador não encontrado: " + nome);
 
+            // Desvincula todas as entregas antes de apagar o entregador
             if (!e.getListaEntregas().isEmpty()) {
                 List<Entrega> entregas = new ArrayList<>(e.getListaEntregas());
                 for (Entrega ent : entregas) {
@@ -187,9 +184,9 @@ public class Fachada {
             }
 
             EntregadorRepositorio.apagar(e);
-            EntregadorRepositorio.commit();
+            CRUDRepositorio.commit();
         } catch (Exception ex) {
-            EntregadorRepositorio.rollback();
+            CRUDRepositorio.rollback();
             throw ex;
         } finally {
             EntregadorRepositorio.desconectar();
@@ -197,41 +194,42 @@ public class Fachada {
     }
     
     // -------------------------------------------------------------------------
-    //  OUTRAS OPERAÇÕES
+    //  ADICIONAR PEDIDO NA ENTREGA (Vinculo)
     // -------------------------------------------------------------------------
 
     public static void AddPedidoNaEntrega(int idPedido, int idEntrega) throws Exception {
         PedidoRepositorio.conectar(); 
         try {
-            PedidoRepositorio.begin();
+            CRUDRepositorio.begin();
             
             Pedido p = PedidoRepositorio.ler(idPedido);
             if (p == null) throw new Exception("Pedido não existe: " + idPedido);
             if (p.getEntrega() != null) throw new Exception("Pedido já tem entrega");
 
-            Entrega e = EntregaRepositorio.lerEntrega(idEntrega);
+            Entrega e = EntregaRepositorio.ler(idEntrega);
             if (e == null) throw new Exception("Entrega não existe: " + idEntrega);
             
+            // Máximo 2 pedidos
             if (e.getListaPedidos().size() >= 2) {
                 throw new Exception("Regra violada: A entrega " + idEntrega + " já atingiu o limite de 2 pedidos.");
             }
             
+            // Vincula dos dois lados 
             e.adicionar(p);
-            p.setEntrega(e);
-
+            
+            // Atualiza ambos no banco
             PedidoRepositorio.atualizar(p);
             EntregaRepositorio.atualizar(e);
             
-            PedidoRepositorio.commit();
+            CRUDRepositorio.commit();
         } catch (Exception ex) {
-            PedidoRepositorio.rollback();
+            CRUDRepositorio.rollback();
             throw ex;
         } finally {
             PedidoRepositorio.desconectar();
         }
     }
 
-    
     // -------------------------------------------------------------------------
     //  LISTAGENS E CONSULTAS
     // -------------------------------------------------------------------------
@@ -240,15 +238,12 @@ public class Fachada {
         EntregadorRepositorio.conectar();
         try {
             List<Entregador> lista = EntregadorRepositorio.listar();
-
-            if (lista == null) {
-                return new ArrayList<>(); 
-            }
+            
+            if (lista == null) return new ArrayList<>();
 
             for (Entregador e : lista) {
                 e.getListaEntregas().size(); 
             }
-            
             return lista;
         } catch (Exception e) {
             System.out.println("Erro ao listar: " + e.getMessage());
@@ -257,39 +252,63 @@ public class Fachada {
             EntregadorRepositorio.desconectar();
         }
     }
-    public static List<Entrega> listarEntregas(){
+
+    public static List<Entrega> listarEntregas() {
         EntregaRepositorio.conectar();
         try { 
             List<Entrega> lista = EntregaRepositorio.listar();
+            if (lista == null) return new ArrayList<>();
+
             for(Entrega e : lista) {
                 if(e.getEntregador() != null) e.getEntregador().getNome();
                 e.getListaPedidos().size();
             }
             return lista;
         } 
-        finally { EntregaRepositorio.desconectar(); }
-    }
-    public static List<Pedido> listarPedidos(){
-        PedidoRepositorio.conectar();
-        try { return PedidoRepositorio.listar(); } 
-        finally { PedidoRepositorio.desconectar(); }
+        finally { 
+            EntregaRepositorio.desconectar(); 
+        }
     }
 
+    public static List<Pedido> listarPedidos() {
+        PedidoRepositorio.conectar();
+        try { 
+            return PedidoRepositorio.listar(); 
+        } 
+        finally { 
+            PedidoRepositorio.desconectar(); 
+        }
+    }
+
+    // Consultas específicas
     public static List<Entrega> consultarEntregasPorData(String data) {
         EntregaRepositorio.conectar();
-        try { return EntregaRepositorio.EntregasNaData(data); } 
-        finally { EntregaRepositorio.desconectar(); }
+        try { 
+            return EntregaRepositorio.EntregasNaData(data); 
+        } 
+        finally { 
+            EntregaRepositorio.desconectar(); 
+        }
     }
 
     public static List<Entrega> consultarEntregadoresProdutivos(int n) {
-        EntregadorRepositorio.conectar();
-        try { return EntregaRepositorio.consultarEntregasComMaisDeNPedidos(n); } 
-        finally { EntregadorRepositorio.desconectar(); }
+        EntregaRepositorio.conectar();
+        try { 
+            
+            return EntregaRepositorio.consultarEntregasComMaisDeNPedidos(n); 
+        } 
+        finally { 
+            EntregaRepositorio.desconectar(); 
+        }
     }
 
     public static List<Pedido> consultarPedidosPorEntregador(String nomeEntregador) {
         PedidoRepositorio.conectar();
-        try { return PedidoRepositorio.PedidosPorEntregador(nomeEntregador); } 
-        finally { PedidoRepositorio.desconectar(); }
+        try { 
+            return PedidoRepositorio.PedidosPorEntregador(nomeEntregador); 
+        } 
+        finally { 
+            PedidoRepositorio.desconectar(); 
+        }
     }
 }
