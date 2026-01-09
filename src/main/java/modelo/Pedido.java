@@ -3,6 +3,7 @@ package modelo;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "pedido_20241370025")
 public class Pedido {
     
     @Id
@@ -16,6 +17,8 @@ public class Pedido {
     // Muitos Pedidos para Uma Entrega
     @ManyToOne
     private Entrega entrega;
+    
+    
 
     public Pedido() {}    
 

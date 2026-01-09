@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "entregador_20241370025")
 public class Entregador {
 	
 	@Id
@@ -18,7 +19,17 @@ public class Entregador {
     // Um entregador tem variás entregas
     @OneToMany(mappedBy = "entregador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Entrega> lista_entregas = new ArrayList<>();
-
+    
+    // 2. REQUISITO: Atributo byte[] para foto
+    // No Postgres usamos 'bytea', no MySQL seria 'longblob'
+    @Column(columnDefinition = "bytea")
+    private byte[] foto;
+    
+    
+ // Getters e Setters da Foto
+    public byte[] getFoto() { return foto; }
+    public void setFoto(byte[] foto) { this.foto = foto; }
+    
     public Entregador() {}
     
     
@@ -57,18 +68,16 @@ public class Entregador {
 		throw new Exception("Entregador não encontrado");
 	}
 	
+	public void setNome(String nome2) {
+		this.nome = nome2;
+	}
 
-
-@Override
-public String toString() {
-
-	
-	return "id: " + this.id + ","+ " nome: " + this.nome + "," + " Entregas: " + lista_entregas ;
-}
-
-
-public void setNome(String nome2) {
-	this.nome = nome2;
-}
+	@Override
+    public String toString() {
+		
+        // Exibe se tem foto ou não no toString
+        String temFoto = (foto != null) ? "Sim" : "Não";
+        return "id: " + this.id + ", nome: " + this.nome + ", Foto: " + temFoto + ", Entregas: " + lista_entregas.size();
+    }
 
 }

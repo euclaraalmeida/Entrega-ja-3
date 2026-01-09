@@ -7,7 +7,7 @@ import modelo.Entregador;
 import util.Util;
 
 public class RepositorioEntregador extends CRUDRepositorio<Entregador> {
-
+	
     public Entregador ler(String nome) {
         try {
         	
@@ -26,10 +26,10 @@ public class RepositorioEntregador extends CRUDRepositorio<Entregador> {
         }
     }
 
-    @Override
-    public Entregador ler(Object chave) {
-        return ler((String) chave);
-    }
+	@Override // considerando pesquisar por id // escolher qual??
+	public Entregador ler(Object chave) {
+		return Util.getManager().find(Entregador.class, chave);
+	}
     
     @Override
     public List<Entregador> listar() {

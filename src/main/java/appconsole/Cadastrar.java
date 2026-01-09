@@ -1,16 +1,14 @@
 package appconsole;
 
-import repositorio.CRUDRepositorio; // <--- IMPORTANTE: Não esqueça desse import!
 import requisito.Fachada;
 
 public class Cadastrar {
 
     public Cadastrar() {
         try {
-            
-            CRUDRepositorio.begin();
-
             System.out.println("Cadastrando dados...");
+
+            // NÃO coloque begin/commit aqui! A Fachada já faz isso internamente.
 
             Fachada.CriarEntregador("João");
             Fachada.CriarEntregador("Maria");
@@ -52,40 +50,25 @@ public class Cadastrar {
             Fachada.CriarPedido(250.0, "Ferramentas", "Nova Mamoré");
             Fachada.CriarPedido(199.9, "Utilidades domésticas", "Alto Paraíso");
 
-            // João (Entregas IDs supostos 1 e 2)
+            // Associações
             Fachada.AddPedidoNaEntrega(1, 1); 
             Fachada.AddPedidoNaEntrega(2, 2); 
             Fachada.AddPedidoNaEntrega(3, 2); 
-            
-            // Maria (Entregas 3, 4, 5)
             Fachada.AddPedidoNaEntrega(4, 3);
             Fachada.AddPedidoNaEntrega(5, 4);
             Fachada.AddPedidoNaEntrega(6, 5);
-            
-            // Lucas (Entrega 6)
             Fachada.AddPedidoNaEntrega(7, 6);
-            
-            // Matheus (Entregas 7, 8)
             Fachada.AddPedidoNaEntrega(8, 7);
             Fachada.AddPedidoNaEntrega(9, 8);
-            
-            // Fausto (Entrega 9)
             Fachada.AddPedidoNaEntrega(10, 9);
-            
-            // Mariana (Entrega 10)
             Fachada.AddPedidoNaEntrega(11, 10);
-            
-            // Davi (Entrega 11)
             Fachada.AddPedidoNaEntrega(12, 11);
-
-            CRUDRepositorio.commit(); 
 
             System.out.println("Cadastro realizado com sucesso!");
 
         } catch (Exception e) {
-            CRUDRepositorio.rollback();
             System.out.println("Erro ao cadastrar: " + e.getMessage());
-            e.printStackTrace(); // Ajuda a ver onde foi o erro exato
+            e.printStackTrace(); 
         }
     }
 

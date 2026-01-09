@@ -10,6 +10,7 @@ public class Alterar {
             
 
             Fachada.removerEntregaDoEntregador("Lucas", 6);
+            // ta removendo entrega, isso ta certo?
             
             System.out.println("Relacionamento removido com sucesso via Fachada.");
 
