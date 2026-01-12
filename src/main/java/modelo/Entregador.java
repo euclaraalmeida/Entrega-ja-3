@@ -17,8 +17,8 @@ public class Entregador {
     private String nome;
     
     // Um entregador tem variás entregas
-    @OneToMany(mappedBy = "entregador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Entrega> lista_entregas = new ArrayList<>();
+	@OneToMany(mappedBy = "entregador", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false, fetch = FetchType.EAGER)
+	private List<Entrega> lista_entregas = new ArrayList<>();
     
     // 2. REQUISITO: Atributo byte[] para foto
     // No Postgres usamos 'bytea', no MySQL seria 'longblob'

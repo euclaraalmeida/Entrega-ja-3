@@ -9,7 +9,7 @@ public class Alterar {
             System.out.println("Iniciando alteração...");
             
 
-            Fachada.removerEntregaDoEntregador("Lucas", 6);
+            Fachada.removerEntregaDoEntregador("Maria", 3);
             // ta removendo entrega, isso ta certo?
             
             System.out.println("Relacionamento removido com sucesso via Fachada.");
