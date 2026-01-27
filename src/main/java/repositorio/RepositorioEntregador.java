@@ -17,16 +17,13 @@ public class RepositorioEntregador extends CRUDRepositorio<Entregador> {
             
             query.setParameter("n", nome);
             
-            // Transforma ela num objeto Entregador
-            // Entrega (retorna) esse objeto
-            return query.getSingleResult(); // ctz que vai retornar apenas 1 , 
-            // se puder ter mais de 1 entregador isso muda , perguntar tbm se essa busca sera pelo nome mesmo ou pelo id agora?
+            return query.getSingleResult(); 
         } catch (NoResultException e) {
             return null; 
         }
     }
 
-	@Override // considerando pesquisar por id // escolher qual??
+	@Override
 	public Entregador ler(Object chave) {
 		return Util.getManager().find(Entregador.class, chave);
 	}

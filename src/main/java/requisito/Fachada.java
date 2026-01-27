@@ -134,6 +134,22 @@ public class Fachada {
             EntregadorRepositorio.desconectar();
         }
     }
+    
+    
+
+    public static void alterarEntregador(Entregador e) throws Exception {
+        EntregadorRepositorio.conectar();
+        try {
+            CRUDRepositorio.begin();
+            EntregadorRepositorio.atualizar(e);
+            CRUDRepositorio.commit();
+        } catch (Exception ex) {
+            CRUDRepositorio.rollback();
+            throw ex;
+        } finally {
+            EntregadorRepositorio.desconectar();
+        }
+    }
 
     // -------------------------------------------------------------------------
     //  EXCLUSÃO

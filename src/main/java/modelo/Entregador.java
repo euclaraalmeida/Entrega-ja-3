@@ -22,7 +22,6 @@ public class Entregador {
     
     // 2. REQUISITO: Atributo byte[] para foto
     // No Postgres usamos 'bytea', no MySQL seria 'longblob'
-    @Column(columnDefinition = "bytea")
     private byte[] foto;
     
     
