@@ -49,12 +49,10 @@ public class TelaEntregador {
 	private JLabel labelMensagem;
 	private JLabel labelNome;
 	
-	// Componentes da Foto
 	private JLabel labelFoto;
 	private JButton buttonBuscarFoto;
 	private JButton buttonLimparFoto;
-	private BufferedImage buffer; // Armazena a imagem na memória
-
+	private BufferedImage buffer; 
 	public TelaEntregador() {
 		initialize();
 	}
@@ -85,7 +83,6 @@ public class TelaEntregador {
 			}
 		};
 		
-		// Quando clicar na linha, carrega o nome E a foto
 		table.addMouseListener(new MouseAdapter() {
 		    @Override
 		    public void mouseClicked(MouseEvent e) {
@@ -93,7 +90,6 @@ public class TelaEntregador {
 		            String nome = (String) table.getValueAt(table.getSelectedRow(), 0);
 		            textFieldNome.setText(nome);
 		            
-		            // Chama o método que busca a foto no banco
 		            carregarFotoDoEntregador(nome);
 		        }
 		    }
@@ -139,18 +135,21 @@ public class TelaEntregador {
 		});
 		buttonBuscarFoto.setBounds(550, 190, 150, 23);
 		frame.getContentPane().add(buttonBuscarFoto);
-
+		
+		
 		buttonLimparFoto = new JButton("Limpar Foto");
-		buttonLimparFoto.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				buffer = null;
-				labelFoto.setIcon(null);
-				labelFoto.setText("sem foto");
-			}
-		});
-		buttonLimparFoto.setBounds(550, 220, 150, 23);
-		frame.getContentPane().add(buttonLimparFoto);
+		buttonLimparFoto.setBounds(550, 220, 150, 23); 
+		frame.getContentPane().add(buttonLimparFoto);  
 
+		buttonLimparFoto.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+		        buffer = null;            
+		        labelFoto.setIcon(null);  
+		        labelFoto.setText("sem foto");
+		        
+		        labelMensagem.setText("Aviso: Clique em 'Atualizar' para confirmar a remoção da foto.");
+		    }
+		});
 		// --- BOTÕES AÇÃO ---
 		buttonCriar = new JButton("Criar");
 		buttonCriar.addActionListener(new ActionListener() {
@@ -178,8 +177,10 @@ public class TelaEntregador {
 		});
 		buttonApagar.setBounds(290, 280, 90, 23);
 		frame.getContentPane().add(buttonApagar);
-
+		
+		
 		buttonLimpar = new JButton("Limpar");
+
 		buttonLimpar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				textFieldNome.setText("");
@@ -201,7 +202,7 @@ public class TelaEntregador {
 	}
 
 	// ---------------------------------------------------------
-	// MÉTODOS LÓGICOS
+	// MÉTODOS
 	// ---------------------------------------------------------
 
 	public void listagem() {
@@ -220,44 +221,29 @@ public class TelaEntregador {
 		}
 	}
 
-	// --- MÉTODO BLINDADO PARA CARREGAR A FOTO ---
 	public void carregarFotoDoEntregador(String nome) {
-		try {
-			List<Entregador> lista = Fachada.listarEntregador();
-			Entregador ent = null;
-			for(Entregador e : lista) {
-				if(e.getNome().equals(nome)) {
-					ent = e;
-					break;
-				}
-			}
+	    try {
+	        Entregador ent = Fachada.localizarEntregador(nome);
 
-			// Verifica se tem foto E se o array de bytes não está vazio
-			if (ent != null && ent.getFoto() != null && ent.getFoto().length > 0) {
-				InputStream in = new ByteArrayInputStream(ent.getFoto());
-				buffer = ImageIO.read(in); 
-				
-				// Se a conversão funcionou (a imagem é válida)
-				if (buffer != null) {
-					ImageIcon icon = new ImageIcon(buffer.getScaledInstance(150, 150, Image.SCALE_SMOOTH));
-					labelFoto.setIcon(icon);
-					labelFoto.setText("");
-				} else {
-					// Bytes existem mas não formam imagem válida
-					labelFoto.setIcon(null);
-					labelFoto.setText("Erro Imagem");
-				}
-			} else {
-				buffer = null;
-				labelFoto.setIcon(null);
-				labelFoto.setText("sem foto");
-			}
-		} catch (Exception e) {
-			labelMensagem.setText("Erro ao carregar foto: " + e.getMessage());
-			e.printStackTrace();
-		}
+	        if (ent != null && ent.getFoto() != null && ent.getFoto().length > 0) {
+	            InputStream in = new ByteArrayInputStream(ent.getFoto());
+	            buffer = ImageIO.read(in); 
+	            
+	            if (buffer != null) {
+	                ImageIcon icon = new ImageIcon(buffer.getScaledInstance(
+	                    labelFoto.getWidth(), labelFoto.getHeight(), Image.SCALE_SMOOTH));
+	                labelFoto.setIcon(icon);
+	                labelFoto.setText("");
+	            }
+	        } else {
+	            buffer = null;
+	            labelFoto.setIcon(null);
+	            labelFoto.setText("sem foto");
+	        }
+	    } catch (Exception e) {
+	        labelMensagem.setText("Erro ao carregar: " + e.getMessage());
+	    }
 	}
-
 	public void criar() {
 		try {
 			String nome = textFieldNome.getText();
@@ -267,7 +253,6 @@ public class TelaEntregador {
 			}
 			Fachada.CriarEntregador(nome);
 			
-			// Se selecionou foto antes, salva agora
 			if (buffer != null) {
 				salvarFotoNoBanco(nome);
 			}
@@ -288,7 +273,6 @@ public class TelaEntregador {
 			}
 			String nomeOriginal = (String) table.getValueAt(table.getSelectedRow(), 0);
 			
-			// Apenas salva a foto no entregador existente
 			salvarFotoNoBanco(nomeOriginal);
 			
 			labelMensagem.setText("Entregador atualizado!");
@@ -299,30 +283,18 @@ public class TelaEntregador {
 		}
 	}
 	
-	// Método que converte Buffer -> Bytes -> Fachada
 	private void salvarFotoNoBanco(String nomeEntregador) throws Exception {
-		List<Entregador> lista = Fachada.listarEntregador();
-		Entregador ent = null;
-		for(Entregador e : lista) {
-			if(e.getNome().equals(nomeEntregador)) {
-				ent = e;
-				break;
-			}
-		}
-		
-		if (ent != null) {
-			if (buffer != null) {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				ImageIO.write(buffer, "jpg", baos);
-				byte[] bytes = baos.toByteArray();
-				
-				ent.setFoto(bytes);
-			} else {
-				ent.setFoto(null);
-			}
-			Fachada.alterarEntregador(ent);
-		}
+	    if (buffer != null) {
+	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	        ImageIO.write(buffer, "jpg", baos);
+	        byte[] bytes = baos.toByteArray();
+	        
+	        Fachada.alterarFotoEntregador(nomeEntregador, bytes);
+	    } else {
+	        Fachada.alterarFotoEntregador(nomeEntregador, null);
+	    }
 	}
+	
 	
 	public void apagar() {
 		try {

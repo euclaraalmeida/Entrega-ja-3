@@ -295,7 +295,38 @@ public class Fachada {
             PedidoRepositorio.desconectar(); 
         }
     }
-
+    
+    public static Entregador localizarEntregador(String nome) {
+        EntregadorRepositorio.conectar();
+        try {
+            Entregador e = EntregadorRepositorio.ler(nome);
+            if (e != null) {
+                e.getListaEntregas().size(); 
+            }
+            return e;
+        } finally {
+            EntregadorRepositorio.desconectar();
+        }
+    }
+    
+    public static void alterarFotoEntregador(String nome, byte[] foto) throws Exception {
+        EntregadorRepositorio.conectar();
+        try {
+            CRUDRepositorio.begin();
+            Entregador ent = EntregadorRepositorio.ler(nome);
+            if (ent == null) throw new Exception("Entregador não encontrado");
+            
+            ent.setFoto(foto); 
+            EntregadorRepositorio.atualizar(ent); 
+            
+            CRUDRepositorio.commit();
+        } catch (Exception ex) {
+            CRUDRepositorio.rollback();
+            throw ex;
+        } finally {
+            EntregadorRepositorio.desconectar();
+        }
+    }
     // Consultas específicas
     public static List<Entrega> consultarEntregasPorData(String data) {
         EntregaRepositorio.conectar();
