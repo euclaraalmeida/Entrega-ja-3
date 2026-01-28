@@ -29,10 +29,6 @@ public class Util {
             manager.close();
             manager = null;
         }
-        /* ainda não sei porque comentei 
-        if (factory != null && factory.isOpen()) {
-            factory.close();
-            factory = null;
-        } */
+       
     }
 }
