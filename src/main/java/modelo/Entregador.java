@@ -12,16 +12,13 @@ public class Entregador {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     
-    // mudei para o id agora ser a pk
-	@Column(unique = true) // ainda vai ser unico de acordo com as regras de negocio da etapa 2? 
+	@Column(unique = true) /
     private String nome;
     
     // Um entregador tem variás entregas
 	@OneToMany(mappedBy = "entregador", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false, fetch = FetchType.EAGER)
 	private List<Entrega> lista_entregas = new ArrayList<>();
     
-    // 2. REQUISITO: Atributo byte[] para foto
-    // No Postgres usamos 'bytea', no MySQL seria 'longblob'
     private byte[] foto;
     
     
