@@ -12,7 +12,7 @@ public class Entregador {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     
-	@Column(unique = true) /
+	@Column(unique = true) 
     private String nome;
     
     // Um entregador tem variás entregas
