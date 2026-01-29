@@ -102,12 +102,16 @@ public class Fachada {
 
     public static void removerEntregaDoEntregador(String nomeEntregador, int idEntrega) throws Exception {
         EntregadorRepositorio.conectar();
+        EntregaRepositorio.conectar(); 
+        PedidoRepositorio.conectar();  
+        
         try {
             CRUDRepositorio.begin();
 
             Entregador entregador = EntregadorRepositorio.ler(nomeEntregador);
             if (entregador == null) throw new Exception("Entregador não encontrado: " + nomeEntregador);
 
+            // Busca a entrega na lista do entregador
             Entrega entregaParaRemover = null;
             for (Entrega e : entregador.getListaEntregas()) {
                 if (e.getId() == idEntrega) {
@@ -120,11 +124,22 @@ public class Fachada {
                 throw new Exception("O entregador " + nomeEntregador + " não possui a entrega ID: " + idEntrega);
             }
 
+            if (!entregaParaRemover.getListaPedidos().isEmpty()) {
+                List<Pedido> pedidosSoltos = new ArrayList<>(entregaParaRemover.getListaPedidos());
+                
+                for (Pedido p : pedidosSoltos) {
+                    p.setEntrega(null);             
+                    PedidoRepositorio.atualizar(p);
+                }
+                entregaParaRemover.getListaPedidos().clear(); 
+            }
+
             entregador.remover(entregaParaRemover);
             entregaParaRemover.setEntregador(null);
 
             EntregadorRepositorio.atualizar(entregador);
-            EntregaRepositorio.atualizar(entregaParaRemover);
+          
+            EntregaRepositorio.apagar(entregaParaRemover);
             
             CRUDRepositorio.commit();
         } catch (Exception e) {
@@ -132,9 +147,10 @@ public class Fachada {
             throw e;
         } finally {
             EntregadorRepositorio.desconectar();
+            EntregaRepositorio.desconectar();
+            PedidoRepositorio.desconectar();
         }
     }
-    
     
 
     public static void alterarEntregador(Entregador e) throws Exception {

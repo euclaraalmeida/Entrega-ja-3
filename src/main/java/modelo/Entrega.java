@@ -20,7 +20,7 @@ public class Entrega {
     private Entregador entregador;
     
     // um pedido pertence a uma entrega
-    @OneToMany(mappedBy = "entrega", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "entrega", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     private List<Pedido> lista_pedidos = new ArrayList<>();
 
     public Entrega() {}
